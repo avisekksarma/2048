@@ -1,3 +1,4 @@
+import sys
 import pygame
 from GameTemplate import GameTemplate
 from constants import FRAMERATE, SCREEN, AssetManager
@@ -37,7 +38,8 @@ class StartMenu(GameTemplate):
             clock.tick(FRAMERATE)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    running = False
+                    pygame.quit()
+                    sys.exit(0)
                 if event.type == pygame.MOUSEMOTION:
                     # print(event.pos)
                     for btn in self.btns:
@@ -46,5 +48,6 @@ class StartMenu(GameTemplate):
 
                     if self.btns['playBtn'].checkClick(event.pos):
                         running = False
+                        GameTemplate.changeActiveKey('game')
                         
             self.render()

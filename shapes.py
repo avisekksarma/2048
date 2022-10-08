@@ -1,8 +1,7 @@
-from pickle import FALSE
 import pygame
 from constants import AssetManager
 
-
+# General usable shapes across projects
 class Button:
     sizes = {'standard': (200, 70), 'medium': (150, 90), 'huge': (200, 150)}
     # size = (width,height), and pos = (left,top)
@@ -46,3 +45,22 @@ class Button:
         fontColor = self.hoverColor if self.isHovered else self.textColor
         AssetManager.renderFont(self.fontKey, self.text, fontColor,
                                 self.window, (self.rect.centerx, self.rect.centery))
+
+
+# Rectangle with text
+class  TextRect(object):
+    # size = (w,h) and pos = (l,t)
+    def __init__(self,text,pos,size=(60,60),fillColor=(255, 211, 132),textColor=(37, 27, 55),fontKey='heading',isRounded=True,roundVal=2) -> None:
+        self.size = size
+        self.pos = pos
+        self.fillColor = fillColor
+        self.textColor = textColor
+        self.fontKey = fontKey
+        self.isRounded = isRounded
+        self.roundVal = roundVal
+        self.text = text
+        self.rect = pygame.Rect(pos[0],pos[1],size[0],size[1])
+
+    def draw(self,window):
+        pygame.draw.rect(window,self.fillColor,self.rect,0,self.roundVal)
+        AssetManager.renderFont(self.fontKey,self.text,self.textColor,window,self.rect.center)

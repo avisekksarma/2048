@@ -1,6 +1,5 @@
 from GameTemplate import GameTemplate
 from startMenu import StartMenu
-from GameTemplate import GameTemplate
 from game import GameScreen
 from constants import SCREEN
 import pygame
@@ -13,7 +12,8 @@ def runGame():
     GameTemplate.addScreenObj('start',start)
     GameTemplate.addScreenObj('game',game)
     GameTemplate.changeActiveKey('start')
-    GameTemplate.run()
+    while True:
+        GameTemplate.run()
 
 
 if __name__ == "__main__":
