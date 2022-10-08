@@ -1,25 +1,30 @@
-from curses import KEY_LEFT, KEY_RIGHT
+from copy import deepcopy
 import sys
-from termios import INPCK
 import pygame
 import random
 from GameTemplate import GameTemplate
-from constants import FRAMERATE, SCREEN, AssetManager
-from shapes import TextRect
+from constants import FRAMERATE, SCREEN
+from shapes import TextRect,Button
 
 
 #
 class Board(object):
     topLeftPos = (SCREEN['width']*0.2, SCREEN['height']*0.2)
+    # magic number place
+    sqsize = 90
 
     def __init__(self, window, size=4):
         self.window = window
         self.size = size
         self.board = [['' for j in range(size)]for i in range(size)]
-        self.prevBoard  = self.board
+        self.prevBoard  = None # initally set to None
         self.unusedPos = [(i, j) for i in range(4) for j in range(4)]
         self.randomList = [2 for i in range(9)]
         self.randomList.append(4)
+        # surface setup of whole board
+        self.surf = pygame.Surface((self.sqsize*self.size, self.sqsize*self.size))
+        # now surface is rectangle
+        self.surf = self.surf.get_rect(top=Board.topLeftPos[0], left=Board.topLeftPos[1])
         # self.__initResources()
 
     # def __initResources(self):
@@ -33,7 +38,7 @@ class Board(object):
         self.board[randomPos[0]][randomPos[1]] = randomNum
 
     def handleMovement(self, keyCode):
-        self.prevBoard = self.board
+        self.prevBoard = deepcopy(self.board)
         self.unusedPos = []
         moved = False
         combined = False
@@ -235,18 +240,16 @@ class Board(object):
         if(moved or combined):
             self.fillNextNumber()
 
+    def undoMove(self):
+        self.board = deepcopy(self.prevBoard)
+        
+
     def render(self):
-
-        # magic number place
-        sqsize = 90
-
-        surf = pygame.Surface((sqsize*self.size, sqsize*self.size))
-        surf = surf.get_rect(top=Board.topLeftPos[0], left=Board.topLeftPos[1])
-        pygame.draw.rect(self.window, (255, 211, 132), surf, 0, 10)
+        pygame.draw.rect(self.window, (255, 211, 132), self.surf, 0, 10)
         for i in range(self.size):
             for j in range(self.size):
                 obj = TextRect(str(self.board[i][j]), (self.topLeftPos[0]+(
-                    sqsize*j), self.topLeftPos[1]+(sqsize*i)), (sqsize, sqsize))
+                    self.sqsize*j), self.topLeftPos[1]+(self.sqsize*i)), (self.sqsize, self.sqsize))
                 obj.draw(self.window)
 
 
@@ -255,9 +258,20 @@ class GameScreen(GameTemplate):
         super().__init__(title, window, width, height)
         self.btns = {}
         self.gameBoard = Board(window)
+        self.__initialize()
+
+    def __initialize(self):
+        l= self.gameBoard.surf.left
+        t= self.gameBoard.surf.top
+        pos = (l,t)
+        undoBtn = Button(self.window,'Undo','heading',Button.sizes['medium'],pos,(160,120,200),(200,120,200),True)
+        self.btns['undoBtn'] = undoBtn
+
 
     def render(self):
         self.window.fill((120, 80, 100))
+        for btn in self.btns:
+            self.btns[btn].render()
         self.gameBoard.render()
         pygame.display.update()
 
