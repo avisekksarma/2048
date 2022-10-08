@@ -48,15 +48,18 @@ class Board(object):
                 # ====================
                 # for storing value part
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(4):
                     if self.board[i][j]:
                         lst.append(self.board[i][j])
+                        if flag == 0:
+                            flag = 1 # 1 indicates -> now move is necessary
                     else:
                         # setting flag = true for when at least one empty square i.e movement to be done for sure
-                        flag = True
+                        if flag == -1: # -1 indicates no '' till now
+                            flag = 0 # 0 indicates first time '' occured
                 # for moving part
-                if flag:
+                if flag==1:
                     moved = True
                     for j in range(4):
                         if j < len(lst):
@@ -67,44 +70,52 @@ class Board(object):
                 if(self.board[i][0]):
                     j=0
                     while j < 3:
-                        if(self.board[i][j]==self.board[i][j+1]):
+                        if(self.board[i][j] and self.board[i][j]==self.board[i][j+1]):
                             self.board[i][j]*=2
                             self.board[i][j+1]=''
+                            print((i,j))
                             j=j+2
+                            
                             combined = True
                         else:
                             j=j+1
                 # ====================
                 # repeated part
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(4):
                     if self.board[i][j]:
                         lst.append(self.board[i][j])
+                        if flag == 0:
+                            flag = 1 
                     else:
-                        flag = True
+                        if flag == -1 :
+                            flag = 0 
                 # for moving part
-                if flag:
+                if flag==1:
                     moved = True
-                    for j in range(4):
-                        if j < len(lst):
-                            self.board[i][j] = lst[j]
-                        else:
-                            self.unusedPos.append((i,j))
-                            self.board[i][j] = ''
+                for j in range(4):
+                    if j < len(lst):
+                        self.board[i][j] = lst[j]
+                    else:
+                        self.unusedPos.append((i,j))
+                        self.board[i][j] = ''
                 # ====================
 
         elif (keyCode == pygame.K_RIGHT):
             for i in range(4):
                 # ============================
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(3,-1,-1):
                     if self.board[i][j]:
                         lst.append(self.board[i][j])
+                        if flag == 0:
+                            flag = 1 
                     else:
-                        flag = True
-                if flag:
+                        if flag == -1 :
+                            flag = 0
+                if flag==1:
                     moved = True
                     for j in range(3,-1,-1):
                         if 4-j-1<len(lst):
@@ -115,7 +126,7 @@ class Board(object):
                 if(self.board[i][3]):
                     j=3
                     while j > 0:
-                        if(self.board[i][j]==self.board[i][j-1]):
+                        if(self.board[i][j] and self.board[i][j]==self.board[i][j-1]):
                             self.board[i][j]*=2
                             self.board[i][j-1]=''
                             j=j-2
@@ -125,34 +136,40 @@ class Board(object):
 
                 # repeated part
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(3,-1,-1):
                     if self.board[i][j]:
                         lst.append(self.board[i][j])
+                        if flag == 0:
+                            flag = 1
                     else:
-                        flag = True
-                if flag:
+                        if flag == -1:
+                            flag = 0
+                if flag==1:
                     moved = True
-                    for j in range(3,-1,-1):
-                        if 4-j-1<len(lst):
-                            self.board[i][j] = lst[4-(j+1)]
-                        else:
-                            self.unusedPos.append((i,j))
-                            self.board[i][j] = ''
+                for j in range(3,-1,-1):
+                    if 4-j-1<len(lst):
+                        self.board[i][j] = lst[4-(j+1)]
+                    else:
+                        self.unusedPos.append((i,j))
+                        self.board[i][j] = ''
 
         elif (keyCode == pygame.K_UP):
             for i in range(4):
                 # ====================
                 # for storing value part
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(4):
                     if self.board[j][i]:
                         lst.append(self.board[j][i])
+                        if flag == 0:
+                            flag = 1
                     else:
-                        flag = True
+                        if flag == -1:
+                            flag = 0
                 # for moving part
-                if flag:
+                if flag==1:
                     moved = True
                     for j in range(4):
                         if j < len(lst):
@@ -163,7 +180,7 @@ class Board(object):
                 if(self.board[0][i]):
                     j=0
                     while j < 3:
-                        if(self.board[j][i]==self.board[j+1][i]):
+                        if(self.board[j][i] and self.board[j][i]==self.board[j+1][i]):
                             self.board[j][i]*=2
                             self.board[j+1][i]=''
                             j=j+2
@@ -173,34 +190,41 @@ class Board(object):
                 # ====================
                 # repeated part
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(4):
                     if self.board[j][i]:
                         lst.append(self.board[j][i])
+                        if flag == 0:
+                            flag = 1
                     else:
-                        flag = True
+                        if flag == -1:
+                            flag = 0
                 # for moving part
-                if flag:
+                if flag==1:
                     moved = True
-                    for j in range(4):
-                        if j < len(lst):
-                            self.board[j][i] = lst[j]
-                        else:
-                            self.unusedPos.append((j,i))
-                            self.board[j][i] = ''
+                for j in range(4):
+                    if j < len(lst):
+                        self.board[j][i] = lst[j]
+                    else:
+                        self.unusedPos.append((j,i))
+                        self.board[j][i] = ''
                 # ====================
 
         elif (keyCode == pygame.K_DOWN):
             for i in range(4):
                 # ============================
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(3,-1,-1):
                     if self.board[j][i]:
                         lst.append(self.board[j][i])
+                        if flag == 0:
+                            flag = 1
                     else:
-                        flag = True
-                if flag:
+                        if flag == -1:
+                            flag = 0
+
+                if flag==1:
                     moved = True
                     for j in range(3,-1,-1):
                         if 4-j-1<len(lst):
@@ -211,7 +235,7 @@ class Board(object):
                 if(self.board[3][i]):
                     j=3
                     while j > 0:
-                        if(self.board[j][i]==self.board[j-1][i]):
+                        if(self.board[j][i] and self.board[j][i]==self.board[j-1][i]):
                             self.board[j][i]*=2
                             self.board[j-1][i]=''
                             j=j-2
@@ -221,22 +245,27 @@ class Board(object):
 
                 # ============================
                 lst = []
-                flag = False
+                flag = -1
                 for j in range(3,-1,-1):
                     if self.board[j][i]:
                         lst.append(self.board[j][i])
+                        if flag == 0:
+                            flag = 1
                     else:
-                        flag = True
-                if flag:
+                        if flag == -1:
+                            flag = 0
+                if flag==1:
                     moved = True
-                    for j in range(3,-1,-1):
-                        if 4-j-1<len(lst):
-                            self.board[j][i] = lst[4-(j+1)]
-                        else:
-                            self.unusedPos.append((j,i))
-                            self.board[j][i] = ''
+                for j in range(3,-1,-1):
+                    if 4-j-1<len(lst):
+                        self.board[j][i] = lst[4-(j+1)]
+                    else:
+                        self.unusedPos.append((j,i))
+                        self.board[j][i] = ''
                 # ==========================
 
+        print('moved = ',moved)
+        print('combined = ',combined)
         if(moved or combined):
             self.fillNextNumber()
 
