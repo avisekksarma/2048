@@ -14,7 +14,8 @@ This is the implementation of 2048 game
     b.$ git clone repo_url
     c.$ source env/bin/activate (activate virtualenv -> this is on UNIX OSes)
     d.$ pip install -r ./2048/requirements.txt
-    e.$ python ./2048/main.py
+    e.$ cd 2048
+    e.$ python main.py
 ```
 
 
