@@ -53,7 +53,7 @@ class Button:
 # Rectangle with text
 class  TextRect(object):
     # size = (w,h) and pos = (l,t)
-    def __init__(self,text,pos,size=(60,60),fillColor=(255, 211, 132),textColor=(37, 27, 55),fontKey='heading',isRounded=True,roundVal=2) -> None:
+    def __init__(self,text,pos,size=(60,60),fillColor=(205,173,142),textColor=(37, 27, 55),fontKey='num1',isRounded=True,roundVal=2) -> None:
         self.size = size
         self.pos = pos
         self.fillColor = fillColor
@@ -66,4 +66,5 @@ class  TextRect(object):
 
     def draw(self,window):
         pygame.draw.rect(window,self.fillColor,self.rect,0,self.roundVal)
+        pygame.draw.rect(window,(187, 155, 126),self.rect, 2, self.roundVal)
         AssetManager.renderFont(self.fontKey,self.text,self.textColor,window,self.rect.center)

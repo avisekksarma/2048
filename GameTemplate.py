@@ -38,4 +38,5 @@ class GameTemplate(object):
         except KeyError:
             pygame.quit()
             sys.exit()
+        pygame.display.set_caption(cls.screenObjs[cls.activeKey].title)
         cls.screenObjs[cls.activeKey].run()

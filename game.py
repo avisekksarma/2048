@@ -1,5 +1,4 @@
 from copy import deepcopy
-from re import A
 import sys
 import pygame
 import random
@@ -13,6 +12,34 @@ class Board(object):
     topLeftPos = (SCREEN['width']*0.2, SCREEN['height']*0.2)
     # magic number place
     sqsize = 90
+    rectColorDict = {
+        '': (205,193,180),
+        '2': (238,228,218),
+        '4': (237,224,200),
+        '8': (242,177,121),
+        '16': (245,149,99),
+        '32': (246,124,96),
+        '64': (246,94,59),
+        '128': (237,207,115),
+        '256': (237,204,98),
+        '512': (237,200,80),
+        '1024': (237,197,63),
+        '2048': (237,194,45),
+    }
+    textColorDict = {
+        '': (255,255,255),
+        '2': (119, 98, 80),
+        '4': (119, 98, 80),
+        '8': (249, 220, 191),
+        '16': (249, 220, 191),
+        '32': (249, 220, 191),
+        '64': (249, 220, 191),
+        '128': (249, 220, 191),
+        '256': (249, 220, 191),
+        '512': (249, 220, 191),
+        '1024': (249, 220, 191),
+        '2048': (249, 220, 191),
+    }
 
 
     def __init__(self, window, size=4):
@@ -25,13 +52,14 @@ class Board(object):
         self.randomList = [2 for i in range(9)]
         self.randomList.append(4)
         # surface setup of whole board
-        self.surf = pygame.Surface((self.sqsize*self.size, self.sqsize*self.size))
+        self.surface = pygame.Surface((self.sqsize*self.size, self.sqsize*self.size))
         # now surface is rectangle
-        self.surf = self.surf.get_rect(top=Board.topLeftPos[0], left=Board.topLeftPos[1])
+        self.surf = self.surface.get_rect(top=Board.topLeftPos[0], left=Board.topLeftPos[1])
         self.fillNextNumber()
         self.fillNextNumber()
         self.prevScore = 0
         self.score = 0
+        self.continuePlay = False
         # self.__initResources()
 
     # def __initResources(self):
@@ -83,7 +111,7 @@ class Board(object):
                             self.score = self.score + self.board[i][j]
                             
                             self.board[i][j+1]=''
-                            print((i,j))
+                            # print((i,j))
                             j=j+2
                             
                             combined = True
@@ -276,7 +304,7 @@ class Board(object):
                         self.board[j][i] = ''
                 # ==========================
 
-        print(self.unusedPos)
+        # print(self.unusedPos)
         if(moved or combined):
             self.fillNextNumber()
 
@@ -293,13 +321,21 @@ class Board(object):
                     if self.board[i][j]=='':
                         self.unusedPos.append((i,j))
         
+    def isGameWon(self):
+        # print(self.board)
+        for i in range(4):
+            # print(self.board[i])
+            if 2048 in self.board[i]:
+               return True 
 
     def render(self):
         pygame.draw.rect(self.window, (255, 211, 132), self.surf, 0, 10)
         for i in range(self.size):
             for j in range(self.size):
+                rectColor = Board.rectColorDict[str(self.board[i][j])]
+                textColor = Board.textColorDict[str(self.board[i][j])]
                 obj = TextRect(str(self.board[i][j]), (self.topLeftPos[0]+(
-                    self.sqsize*j), self.topLeftPos[1]+(self.sqsize*i)), (self.sqsize, self.sqsize))
+                    self.sqsize*j), self.topLeftPos[1]+(self.sqsize*i)), (self.sqsize, self.sqsize),rectColor,textColor)
                 obj.draw(self.window)
 
 
@@ -320,12 +356,13 @@ class GameScreen(GameTemplate):
         resetBtn = Button(self.window,'RESET','heading',Button.sizes['medium'],pos,(20,120,200),(200,120,20),True,True)
         self.btns['resetBtn'] = resetBtn
         backBtn = Button(self.window, 'BACK', 'text', Button.sizes['standard'], (
-            SCREEN['width']*0.00-20, SCREEN['height']*0.02), (100, 100, 170), (125, 250, 195), True, True)
+            SCREEN['width']*0.00-20, SCREEN['height']*0.02), (170, 100, 240), (125, 250, 195), True, True)
         self.btns['backBtn'] = backBtn
 
 
     def render(self):
         self.window.fill((120, 80, 100))
+        # self.window.fill((168, 232, 144))
         pos = (SCREEN['width']//2, 20)
         AssetManager.renderFont(
             'text', 'Score:', (150, 140, 230), self.window, pos)
@@ -336,6 +373,53 @@ class GameScreen(GameTemplate):
             self.btns[btn].render()
         self.gameBoard.render()
         pygame.display.update()
+
+    def manageGameWon(self):
+        
+        if self.gameBoard.isGameWon():
+            surface = pygame.Surface(
+                (self.gameBoard.surf.width, self.gameBoard.surf.height))
+            surface.set_alpha(12)
+            surface.fill((210, 210, 210))
+            btns = {}
+            pos = (SCREEN['width']//2-158, SCREEN['height']//2-10)
+            # btns
+            contBtn = Button(self.window, 'CONTINUE', 'text',
+                            (150, 60), pos, (20, 120, 200), (200, 120, 20), True, True)
+            btns['contBtn'] = contBtn
+            pos = (pos[0]+contBtn.size[0]+20, pos[1])
+            newGameBtn = Button(self.window, 'NEW GAME', 'text',
+                                (150, 60), pos, (20, 120, 200), (200, 120, 20), True, True)
+            btns['newGameBtn'] = newGameBtn
+
+
+            running = True
+            clock = pygame.time.Clock()
+            
+            while running:
+                clock.tick(FRAMERATE)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit(0)
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if btns['contBtn'].checkClick(event.pos):
+                            running = False
+                            self.gameBoard.continuePlay = True
+                        if btns['newGameBtn'].checkClick(event.pos):
+                            running = False
+                            self.gameBoard = self.gameBoard.resetGame(self.window)
+                            
+                # render part
+                
+                self.window.blit(surface,self.gameBoard.surf)
+                pos = (SCREEN['width']//2, SCREEN['height']//2-100)
+                AssetManager.renderFont(
+                    'heading', 'You Won !!!', (55, 41, 72), self.window, pos)
+                for btn in btns:
+                    btns[btn].render()
+                pygame.display.update()
+                # render part ends
 
     def run(self):
         running = True
@@ -366,6 +450,8 @@ class GameScreen(GameTemplate):
                         self.gameBoard.handleMovement(event.key)
 
             self.render()
+            if not self.gameBoard.continuePlay:
+                self.manageGameWon()
 
 
 # for i in range(4):

@@ -11,6 +11,10 @@ def initFonts():
             'assets/OpenType/Kaph-Italic.otf', 32, 'heading')
     AssetManager.loadFont(
             'assets/OpenType/Kaph-Regular.otf', 20, 'text')
+    AssetManager.loadFont(
+            'assets/OpenType/Kaph-Regular.otf', 26, 'num1')
+    AssetManager.loadFont(
+            'assets/nasa/nasalization-rg.otf', 26, 'num2')
 
 class AssetManager(object):
     fonts = {}
