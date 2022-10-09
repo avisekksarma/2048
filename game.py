@@ -299,10 +299,13 @@ class GameScreen(GameTemplate):
 
     def __initialize(self):
         l= self.gameBoard.surf.left
-        t= self.gameBoard.surf.top
-        pos = (l, t-Button.sizes['medium'][1])
-        undoBtn = Button(self.window,'Undo','heading',Button.sizes['medium'],pos,(20,120,200),(200,120,20),True,True)
+        b= self.gameBoard.surf.bottom
+        pos = (l,b)
+        undoBtn = Button(self.window,'UNDO','heading',Button.sizes['medium'],pos,(20,120,200),(200,120,20),True,True)
         self.btns['undoBtn'] = undoBtn
+        backBtn = Button(self.window, 'BACK', 'text', Button.sizes['standard'], (
+            SCREEN['width']*0.00-20, SCREEN['height']*0.02), (100, 100, 170), (125, 250, 195), True, True)
+        self.btns['backBtn'] = backBtn
 
 
     def render(self):
@@ -330,6 +333,10 @@ class GameScreen(GameTemplate):
 
                     if self.btns['undoBtn'].checkClick(event.pos):
                         self.gameBoard.undoMove()
+                    if self.btns['backBtn'].checkClick(event.pos):
+                        running = False
+                        GameTemplate.changeActiveKey('start')
+                    
                         
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN:

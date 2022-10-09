@@ -12,13 +12,20 @@ class StartMenu(GameTemplate):
         self.__initialize()
 
     def __initialize(self):
-        AssetManager.loadFont(
-            'assets/OpenType/Kaph-Italic.otf', 32, 'heading')
+        
         # Magic number below
-        pos = (SCREEN['width']//2-100, SCREEN['height']//2-150)
+        pos = (SCREEN['width']//2-100, SCREEN['height']//2-100)
         playBtn = Button(self.window, 'PLAY', 'heading',
                          Button.sizes['standard'], pos, (140, 140, 140), (190, 190, 190), True,True)
+        pos = (pos[0]+20,pos[1]+60)
+        insBtn = Button(self.window, 'INSTRUCTION', 'heading',
+                         Button.sizes['medium'], pos, (140, 140, 140), (190, 190, 190), True,True)
+        pos = (pos[0]-20,pos[1]+80)
+        quitBtn = Button(self.window, 'QUIT', 'heading',
+                         Button.sizes['standard'], pos, (140, 140, 140), (190, 190, 190), True, True)
         self.btns['playBtn'] = playBtn
+        self.btns['insBtn'] = insBtn
+        self.btns['quitBtn'] = quitBtn
 
     def render(self):
         self.window.fill((120, 80, 100))
@@ -49,5 +56,10 @@ class StartMenu(GameTemplate):
                     if self.btns['playBtn'].checkClick(event.pos):
                         running = False
                         GameTemplate.changeActiveKey('game')
-                        
+                    if self.btns['insBtn'].checkClick(event.pos):
+                        running = False
+                        GameTemplate.changeActiveKey('ins')
+                    if self.btns['quitBtn'].checkClick(event.pos):
+                        pygame.quit()
+                        sys.exit(0)
             self.render()
