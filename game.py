@@ -4,7 +4,7 @@ import sys
 import pygame
 import random
 from GameTemplate import GameTemplate
-from constants import FRAMERATE, SCREEN
+from constants import FRAMERATE, SCREEN, AssetManager
 from shapes import TextRect,Button
 
 
@@ -14,8 +14,9 @@ class Board(object):
     # magic number place
     sqsize = 90
 
+
     def __init__(self, window, size=4):
-        # critical ones for a game state = board, prevBoard, unusedPos
+        # critical ones for a game state = board, prevBoard, unusedPos,score,prevScore
         self.window = window
         self.size = size
         self.board = [['' for j in range(size)]for i in range(size)]
@@ -27,6 +28,10 @@ class Board(object):
         self.surf = pygame.Surface((self.sqsize*self.size, self.sqsize*self.size))
         # now surface is rectangle
         self.surf = self.surf.get_rect(top=Board.topLeftPos[0], left=Board.topLeftPos[1])
+        self.fillNextNumber()
+        self.fillNextNumber()
+        self.prevScore = 0
+        self.score = 0
         # self.__initResources()
 
     # def __initResources(self):
@@ -41,6 +46,7 @@ class Board(object):
 
     def handleMovement(self, keyCode):
         self.prevBoard = deepcopy(self.board)
+        self.prevScore = self.score
         self.unusedPos = []
         moved = False
         combined = False
@@ -74,6 +80,8 @@ class Board(object):
                     while j < 3:
                         if(self.board[i][j] and self.board[i][j]==self.board[i][j+1]):
                             self.board[i][j]*=2
+                            self.score = self.score + self.board[i][j]
+                            
                             self.board[i][j+1]=''
                             print((i,j))
                             j=j+2
@@ -130,6 +138,7 @@ class Board(object):
                     while j > 0:
                         if(self.board[i][j] and self.board[i][j]==self.board[i][j-1]):
                             self.board[i][j]*=2
+                            self.score = self.score + self.board[i][j]
                             self.board[i][j-1]=''
                             j=j-2
                             combined = True
@@ -184,6 +193,7 @@ class Board(object):
                     while j < 3:
                         if(self.board[j][i] and self.board[j][i]==self.board[j+1][i]):
                             self.board[j][i]*=2
+                            self.score = self.score + self.board[j][i]
                             self.board[j+1][i]=''
                             j=j+2
                             combined = True
@@ -239,12 +249,12 @@ class Board(object):
                     while j > 0:
                         if(self.board[j][i] and self.board[j][i]==self.board[j-1][i]):
                             self.board[j][i]*=2
+                            self.score = self.score + self.board[j][i]
                             self.board[j-1][i]=''
                             j=j-2
                             combined = True
                         else:
                             j=j-1
-
                 # ============================
                 lst = []
                 flag = -1
@@ -266,14 +276,17 @@ class Board(object):
                         self.board[j][i] = ''
                 # ==========================
 
-        print('moved = ',moved)
-        print('combined = ',combined)
+        print(self.unusedPos)
         if(moved or combined):
             self.fillNextNumber()
+
+    def resetGame(self,window,size=4):
+        return Board(window,size)
 
     def undoMove(self):
         if(self.prevBoard): # i.e do only if prevBoard is not None
             self.board = deepcopy(self.prevBoard)
+            self.score = self.prevScore
             self.unusedPos = []
             for i in range(4):
                 for j in range(4):
@@ -303,6 +316,9 @@ class GameScreen(GameTemplate):
         pos = (l,b)
         undoBtn = Button(self.window,'UNDO','heading',Button.sizes['medium'],pos,(20,120,200),(200,120,20),True,True)
         self.btns['undoBtn'] = undoBtn
+        pos=(pos[0]+undoBtn.size[0]+30,pos[1])
+        resetBtn = Button(self.window,'RESET','heading',Button.sizes['medium'],pos,(20,120,200),(200,120,20),True,True)
+        self.btns['resetBtn'] = resetBtn
         backBtn = Button(self.window, 'BACK', 'text', Button.sizes['standard'], (
             SCREEN['width']*0.00-20, SCREEN['height']*0.02), (100, 100, 170), (125, 250, 195), True, True)
         self.btns['backBtn'] = backBtn
@@ -310,6 +326,12 @@ class GameScreen(GameTemplate):
 
     def render(self):
         self.window.fill((120, 80, 100))
+        pos = (SCREEN['width']//2, 20)
+        AssetManager.renderFont(
+            'text', 'Score:', (150, 140, 230), self.window, pos)
+        pos = (pos[0], pos[1]+50)
+        AssetManager.renderFont('heading', str(
+            self.gameBoard.score), (150, 140, 230), self.window, pos)
         for btn in self.btns:
             self.btns[btn].render()
         self.gameBoard.render()
@@ -318,7 +340,7 @@ class GameScreen(GameTemplate):
     def run(self):
         running = True
         clock = pygame.time.Clock()
-        self.gameBoard.fillNextNumber()
+        
         while running:
             clock.tick(FRAMERATE)
             for event in pygame.event.get():
@@ -333,11 +355,12 @@ class GameScreen(GameTemplate):
 
                     if self.btns['undoBtn'].checkClick(event.pos):
                         self.gameBoard.undoMove()
+                    if self.btns['resetBtn'].checkClick(event.pos):
+                        self.gameBoard = self.gameBoard.resetGame(self.window)
                     if self.btns['backBtn'].checkClick(event.pos):
                         running = False
                         GameTemplate.changeActiveKey('start')
                     
-                        
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                         self.gameBoard.handleMovement(event.key)
