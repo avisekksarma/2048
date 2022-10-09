@@ -60,6 +60,7 @@ class Board(object):
         self.prevScore = 0
         self.score = 0
         self.continuePlay = False
+        self.gameover = False
         # self.__initResources()
 
     # def __initResources(self):
@@ -72,10 +73,11 @@ class Board(object):
         del self.unusedPos[randomIndex]
         self.board[randomPos[0]][randomPos[1]] = randomNum
 
-    def handleMovement(self, keyCode):
-        self.prevBoard = deepcopy(self.board)
-        self.prevScore = self.score
-        self.unusedPos = []
+    def handleMovement(self, keyCode,checkGameOver=False):
+        if not checkGameOver:
+            self.prevBoard = deepcopy(self.board)
+            self.prevScore = self.score
+            self.unusedPos = []
         moved = False
         combined = False
         # many things are made for 4*4 matrix 2048 for now
@@ -305,8 +307,11 @@ class Board(object):
                 # ==========================
 
         # print(self.unusedPos)
+
         if(moved or combined):
             self.fillNextNumber()
+        if checkGameOver:
+            return combined
 
     def resetGame(self,window,size=4):
         return Board(window,size)
@@ -327,6 +332,32 @@ class Board(object):
             # print(self.board[i])
             if 2048 in self.board[i]:
                return True 
+
+    def isGameOver(self):
+        if len(self.unusedPos) != 0:
+            self.gameover = False
+            return False
+        else:
+            lst = []
+            board = deepcopy(self.board)
+            unusedPos = deepcopy(self.unusedPos)
+            score = self.score
+            lst.append(self.handleMovement(pygame.K_LEFT,True))
+            lst.append(self.handleMovement(pygame.K_RIGHT,True))
+            lst.append(self.handleMovement(pygame.K_UP,True))
+            lst.append(self.handleMovement(pygame.K_DOWN,True))
+            if True not in lst:
+                # i.e. not combined, i.e game is over
+                self.gameover = True
+                return True
+            else:
+                # restore game state
+                self.board = deepcopy(board) 
+                self.unusedPos = deepcopy(unusedPos)
+                self.score = score
+                self.gameover = False
+                return False
+
 
     def render(self):
         pygame.draw.rect(self.window, (255, 211, 132), self.surf, 0, 10)
@@ -402,6 +433,9 @@ class GameScreen(GameTemplate):
                     if event.type == pygame.QUIT:
                         pygame.quit()
                         sys.exit(0)
+                    if event.type == pygame.MOUSEMOTION:
+                        for btn in btns:
+                            btns[btn].checkHovered(event.pos)
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if btns['contBtn'].checkClick(event.pos):
                             running = False
@@ -421,6 +455,48 @@ class GameScreen(GameTemplate):
                 pygame.display.update()
                 # render part ends
 
+
+    def manageGameOver(self):
+        surface = pygame.Surface(
+            (self.gameBoard.surf.width, self.gameBoard.surf.height))
+        surface.set_alpha(12)
+        surface.fill((210, 210, 210))
+        btns = {}
+        pos = (SCREEN['width']//2-80, SCREEN['height']//2-10)
+        # btns
+        newGameBtn = Button(self.window, 'NEW GAME', 'text',
+                            (150, 60), pos, (20, 120, 200), (200, 120, 20), True, True)
+        btns['newGameBtn'] = newGameBtn
+
+        running = True
+        clock = pygame.time.Clock()
+
+        while running:
+            clock.tick(FRAMERATE)
+            for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit(0)
+                    if event.type == pygame.MOUSEMOTION:
+                        for btn in btns:
+                            btns[btn].checkHovered(event.pos)
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if btns['newGameBtn'].checkClick(event.pos):
+                            running = False
+                            self.gameBoard = self.gameBoard.resetGame(
+                                self.window)
+
+            # render part
+
+            self.window.blit(surface, self.gameBoard.surf)
+            pos = (SCREEN['width']//2, SCREEN['height']//2-100)
+            AssetManager.renderFont(
+                'heading', f'Game Over !!!', (55, 41, 72), self.window, pos)
+            for btn in btns:
+                btns[btn].render()
+            pygame.display.update()
+            # render part ends
+
     def run(self):
         running = True
         clock = pygame.time.Clock()
@@ -432,7 +508,6 @@ class GameScreen(GameTemplate):
                     pygame.quit()
                     sys.exit(0)
                 if event.type == pygame.MOUSEMOTION:
-                    # print(event.pos)
                     for btn in self.btns:
                         self.btns[btn].checkHovered(event.pos)
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -452,6 +527,13 @@ class GameScreen(GameTemplate):
             self.render()
             if not self.gameBoard.continuePlay:
                 self.manageGameWon()
+            if self.gameBoard.isGameOver():
+                self.manageGameOver()
+
+        
+            
+
+
 
 
 # for i in range(4):
