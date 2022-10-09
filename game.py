@@ -1,4 +1,5 @@
 from copy import deepcopy
+from re import A
 import sys
 import pygame
 import random
@@ -14,6 +15,7 @@ class Board(object):
     sqsize = 90
 
     def __init__(self, window, size=4):
+        # critical ones for a game state = board, prevBoard, unusedPos
         self.window = window
         self.size = size
         self.board = [['' for j in range(size)]for i in range(size)]
@@ -270,7 +272,13 @@ class Board(object):
             self.fillNextNumber()
 
     def undoMove(self):
-        self.board = deepcopy(self.prevBoard)
+        if(self.prevBoard): # i.e do only if prevBoard is not None
+            self.board = deepcopy(self.prevBoard)
+            self.unusedPos = []
+            for i in range(4):
+                for j in range(4):
+                    if self.board[i][j]=='':
+                        self.unusedPos.append((i,j))
         
 
     def render(self):
@@ -292,8 +300,8 @@ class GameScreen(GameTemplate):
     def __initialize(self):
         l= self.gameBoard.surf.left
         t= self.gameBoard.surf.top
-        pos = (l,t)
-        undoBtn = Button(self.window,'Undo','heading',Button.sizes['medium'],pos,(160,120,200),(200,120,200),True)
+        pos = (l, t-Button.sizes['medium'][1])
+        undoBtn = Button(self.window,'Undo','heading',Button.sizes['medium'],pos,(20,120,200),(200,120,20),True,True)
         self.btns['undoBtn'] = undoBtn
 
 
@@ -314,6 +322,15 @@ class GameScreen(GameTemplate):
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit(0)
+                if event.type == pygame.MOUSEMOTION:
+                    # print(event.pos)
+                    for btn in self.btns:
+                        self.btns[btn].checkHovered(event.pos)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+
+                    if self.btns['undoBtn'].checkClick(event.pos):
+                        self.gameBoard.undoMove()
+                        
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                         self.gameBoard.handleMovement(event.key)

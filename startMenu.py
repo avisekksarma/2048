@@ -17,7 +17,7 @@ class StartMenu(GameTemplate):
         # Magic number below
         pos = (SCREEN['width']//2-100, SCREEN['height']//2-150)
         playBtn = Button(self.window, 'PLAY', 'heading',
-                         Button.sizes['standard'], pos, (140, 140, 140), (190, 190, 190), True)
+                         Button.sizes['standard'], pos, (140, 140, 140), (190, 190, 190), True,True)
         self.btns['playBtn'] = playBtn
 
     def render(self):

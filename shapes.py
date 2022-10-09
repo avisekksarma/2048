@@ -28,8 +28,11 @@ class Button:
         self.roundedVal = 5 if self.isRound else 0
 
     def checkHovered(self, pos):
-        if self.rect.collidepoint(pos):
-            self.isHovered = True
+        if self.hoverOn:
+            if self.rect.collidepoint(pos):
+                self.isHovered = True
+            else:
+                self.isHovered = False
         else:
             self.isHovered = False
 
